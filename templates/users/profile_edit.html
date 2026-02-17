@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .edit-container {
+        padding: 4rem 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    .edit-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 28px;
+        padding: 3rem;
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .edit-card label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+        margin-top: 1.2rem;
+    }
+
+    .edit-card input, .edit-card textarea {
+        width: 100%;
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 12px 16px;
+        outline: none;
+    }
+
+    .edit-card input:focus {
+        border-color: var(--accent-color) !important;
+    }
+
+    .btn-save {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 2rem;
+        transition: 0.3s;
+    }
+
+    .btn-save:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="container edit-container">
+    <div class="edit-card">
+        <h2 class="text-white fw-bold mb-4">Edit Profile Settings</h2>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <h5 class="text-secondary small text-uppercase fw-bold mb-3" style="letter-spacing: 1px;">Account Info</h5>
+            {{ u_form.as_p }}
+            
+            <hr class="border-secondary opacity-10 my-4">
+            
+            <h5 class="text-secondary small text-uppercase fw-bold mb-3" style="letter-spacing: 1px;">Personal Details</h5>
+            {{ p_form.as_p }}
+
+            <button type="submit" class="btn-save">Save All Changes</button>
+            <a href="{% url 'profile' %}" class="btn btn-link w-100 text-secondary text-decoration-none mt-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <a href="{% url 'vendor_dashboard' %}" class="text-accent text-decoration-none small fw-bold">
+                    ← Back to Dashboard
+                </a>
+                <h1 class="text-white fw-bold mt-2">{{ title }}</h1>
+            </div>
+
+            <div class="glass-card p-4 p-md-5" style="background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border-radius: 28px; border: 1px solid rgba(255,255,255,0.1);">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold text-uppercase" for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-grid mt-5">
+                        <button type="submit" class="btn-emerald-pill py-3 fs-5">
+                            Save Product Listing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

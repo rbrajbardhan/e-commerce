@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .checkout-header {
+        padding: 4rem 0 2rem 0;
+    }
+
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 2.5rem;
+    }
+
+    /* Form Styling */
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 12px 15px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-color) !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+    }
+
+    /* Order Summary Sidebar */
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .checkout-btn {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 16px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 1.5rem;
+        transition: 0.3s;
+    }
+
+    .checkout-btn:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .item-row {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+</style>
+
+<div class="container mb-5">
+    <div class="checkout-header">
+        <h1 class="fw-bold mb-1 text-white display-5">Checkout</h1>
+        <p class="text-secondary fs-5 opacity-75">Complete your details to finalize your order.</p>
+    </div>
+
+    
+
+    <div class="row g-5">
+        <form method="POST" action="{% url 'place_order' %}" class="row g-5">
+            {% csrf_token %}
+            <div class="col-lg-7">
+                <div class="glass-panel">
+                    <h4 class="text-white fw-bold mb-4">Shipping Information</h4>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name" class="form-control" placeholder="John Doe" value="{{ user.get_full_name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control" placeholder="john@example.com" value="{{ user.email }}" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Delivery Address</label>
+                        <textarea name="address" class="form-control" rows="4" placeholder="Street name, City, Postcode" required>{{ user.profile.address }}</textarea>
+                    </div>
+
+                    <div class="d-none d-lg-block">
+                        <button type="submit" class="checkout-btn">Complete Purchase</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="glass-panel" style="position: sticky; top: 100px;">
+                    <h4 class="text-white fw-bold mb-4">Order Summary</h4>
+                    
+                    <div class="mb-4" style="max-height: 300px; overflow-y: auto;">
+                        {# Corrected loop to use the iterable Cart object #}
+                        {% for item in cart %}
+                        <div class="item-row d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" class="rounded-3 me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% endif %}
+                                <div>
+                                    <span class="text-white d-block fw-semibold" style="font-size: 0.9rem;">{{ item.product.name }}</span>
+                                    <small class="text-secondary">Qty: {{ item.quantity }}</small>
+                                </div>
+                            </div>
+                            <span class="text-white small fw-bold">${{ item.total_price }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="summary-item mt-4">
+                        <span class="text-secondary">Subtotal</span>
+                        <span class="text-white">${{ total_price }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="text-secondary">Shipping</span>
+                        <span class="text-success fw-bold">Free</span>
+                    </div>
+                    
+                    <hr class="border-secondary opacity-10 my-3">
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-white fw-bold fs-5">Total</span>
+                        <span class="text-white fw-bold fs-4" style="color: var(--accent-color) !important;">${{ total_price }}</span>
+                    </div>
+
+                    <div class="d-lg-none mt-4">
+                        <button type="submit" class="checkout-btn">Complete Purchase</button>
+                    </div>
+
+                    <div class="mt-4 p-3 rounded-3" style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.2);">
+                        <p class="text-secondary small mb-0 text-center">
+                            🔒 Your transaction is encrypted and secure.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

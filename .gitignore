@@ -1,0 +1,46 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+venv/
+ENV/
+env/
+
+# --- Django ---
+db.sqlite3
+db.sqlite3-journal
+# Secret keys or local override settings
+local_settings.py
+
+# --- Media & Static ---
+
+media/products/*
+media/profiles/*
+
+media/*
+!media/.gitkeep
+
+# Ignore collected static files
+static_root/
+
+# --- macOS Specific ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# --- Environment & IDE ---
+.env
+.python-version
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# --- Logs ---
+*.log
+logs/
+
+# scipt for generating demo products
+seed_products.py

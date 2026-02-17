@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .profile-header { padding: 4rem 0 2rem 0; }
+    
+    .profile-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 28px;
+        padding: 3rem;
+    }
+
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        background: var(--bg-dark);
+        border: 2px solid var(--accent-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1.5rem auto;
+        overflow: hidden;
+    }
+
+    .info-group {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-label {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+</style>
+
+<div class="container mb-5">
+    <div class="profile-header text-center">
+        <h1 class="fw-bold mb-1 text-white display-5">Account Settings</h1>
+        <p class="text-secondary fs-5 opacity-75">Manage your personal information and preferences.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="profile-card">
+                <div class="text-center mb-5">
+                    <div class="avatar-circle">
+                        {% if user.profile.profile_image %}
+                            <img src="{{ user.profile.profile_image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <span class="opacity-50">👤</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="text-white fw-bold mb-0">{{ user.username }}</h3>
+                    <p class="text-secondary small">Member since {{ user.date_joined|date:"F Y" }}</p>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value">{{ user.email|default:"Not provided" }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Phone Number</div>
+                    <div class="info-value">{{ user.profile.phone|default:"Not provided" }}</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Shipping Address</div>
+                    <div class="info-value">{{ user.profile.address|default:"No address saved" }}</div>
+                </div>
+
+                <div class="d-grid gap-3 mt-5">
+                    <a href="{% url 'profile_edit' %}" class="btn-emerald btn-lg text-center text-decoration-none py-3" style="border-radius: 14px;">
+                        Edit My Profile
+                    </a>
+                    <a href="{% url 'order_history' %}" class="btn btn-outline-light border-secondary py-3" style="border-radius: 14px;">
+                        View Purchase History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

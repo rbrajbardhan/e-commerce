@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .cart-container {
+        max-width: 1000px;
+        margin: 4rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .page-title {
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        color: #fff;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* --- GLASS CART TABLE --- */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 28px;
+        padding: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .cart-item {
+        display: grid;
+        grid-template-columns: 100px 1fr auto auto;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .cart-item:last-child { border-bottom: none; }
+
+    .cart-item-img {
+        width: 100px;
+        height: 100px;
+        border-radius: 18px;
+        object-fit: cover;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .item-info h5 {
+        color: #fff;
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+    }
+
+    .item-info p {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    /* Quantity Controls */
+    .qty-wrapper {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 5px 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .qty-btn {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 1.2rem;
+        transition: 0.3s;
+    }
+
+    .qty-btn:hover { color: #fff; transform: scale(1.2); }
+
+    /* --- SUMMARY SECTION --- */
+    .cart-summary {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .total-label { color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+    .total-amount { color: #fff; font-weight: 800; font-size: 2.2rem; display: block; line-height: 1; }
+
+    /* --- EMPTY STATE IMPROVED --- */
+    .empty-cart-glass {
+        text-align: center;
+        padding: 6rem 2rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 2px dashed rgba(255, 255, 255, 0.05);
+        border-radius: 32px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.2));
+    }
+
+    @media (max-width: 768px) {
+        .cart-item { grid-template-columns: 80px 1fr; }
+        .qty-wrapper { grid-column: span 2; justify-content: center; }
+        .cart-summary { flex-direction: column; align-items: stretch; gap: 2rem; }
+    }
+</style>
+
+<div class="cart-container">
+    <div class="mb-5">
+        <h1 class="page-title">Your Collection</h1>
+        <p class="text-secondary fs-5">Review your items before proceeding to secure checkout.</p>
+    </div>
+
+    {# Using 'cart' instead of 'cart_items' to match the View's context and enable iteration #}
+    {% if cart %}
+        <div class="glass-card">
+            <div class="cart-list">
+                {% for item in cart %}
+                <div class="cart-item">
+                    {# item.product is available because our Cart.__iter__ fetches the DB object #}
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
+                    {% endif %}
+                    
+                    <div class="item-info">
+                        <h5>{{ item.product.name }}</h5>
+                        <p>{{ item.product.category.name }}</p>
+                        <p class="text-accent fw-bold mt-1">${{ item.price }}</p>
+                    </div>
+
+                    <div class="qty-wrapper">
+                        {# Note: Logic for minus should ideally be a form or a specific 'decrease' view #}
+                        <a href="{% url 'remove_from_cart' item.product.id %}" class="qty-btn" title="Remove one">−</a>
+                        <span class="fw-bold text-white">{{ item.quantity }}</span>
+                        <a href="{% url 'add_to_cart' item.product.id %}" class="qty-btn" title="Add one">+</a>
+                    </div>
+
+                    <div class="text-end d-none d-md-block">
+                        <span class="text-secondary small d-block">Subtotal</span>
+                        <span class="fw-bold text-white fs-5">${{ item.total_price }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary">
+                <div>
+                    <span class="total-label">Total Estimate</span>
+                    <span class="total-amount">${{ total_price }}</span>
+                </div>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-light px-4 py-3" style="border-radius: 16px; border-color: rgba(255,255,255,0.1);">Continue Shopping</a>
+                    <a href="{% url 'checkout' %}" class="btn-emerald-pill px-5 py-3 shadow-lg">Secure Checkout →</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-cart-glass">
+            <div class="empty-icon">🛍️</div>
+            <h2 class="text-white fw-bold mb-3">Your cart is currently empty</h2>
+            <p class="text-secondary mb-5 mx-auto" style="max-width: 400px;">Looks like you haven't added any premium tech to your collection yet. Start exploring our latest drops!</p>
+            <a href="{% url 'product_list' %}" class="btn-emerald-pill px-5 py-3">Explore Products</a>
+        </div>
+    {% endif %}
+</div>
+
+
+
+{% endblock %}

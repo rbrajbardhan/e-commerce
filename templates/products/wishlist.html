@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .wishlist-container {
+        max-width: 1200px;
+        margin: 4rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .page-title {
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        color: #fff;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* --- PRODUCT CARD (Matching Home) --- */
+    .product-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 24px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--accent-color);
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .product-img-container {
+        position: relative;
+        width: 100%;
+        padding-top: 100%;
+        background: #000;
+    }
+
+    .product-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .remove-wishlist-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+        background: rgba(239, 68, 68, 0.2);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ef4444;
+        transition: 0.3s;
+    }
+
+    .remove-wishlist-btn:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .product-info-body { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
+    
+    .product-link { text-decoration: none; color: inherit; }
+
+    /* --- EMPTY STATE --- */
+    .empty-wishlist {
+        text-align: center;
+        padding: 6rem 2rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 2px dashed rgba(255, 255, 255, 0.05);
+        border-radius: 32px;
+    }
+</style>
+
+<div class="wishlist-container">
+    <div class="mb-5">
+        <h1 class="page-title">My Wishlist</h1>
+        <p class="text-secondary fs-5">Your personal curation of premium gear.</p>
+    </div>
+
+    
+
+    {% if wishlist_items %}
+        <div class="row g-4">
+            {% for product in wishlist_items %}
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3" id="wishlist-item-{{ product.id }}">
+                <article class="product-card">
+                    <button class="remove-wishlist-btn wishlist-btn" data-id="{{ product.id }}" title="Remove from Wishlist">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+
+                    <div class="product-img-container">
+                        <a href="{% url 'product_detail' product.slug %}" class="product-link">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" class="product-img" alt="{{ product.name }}">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100 opacity-25">🖼️</div>
+                            {% endif %}
+                        </a>
+                    </div>
+                    
+                    <div class="product-info-body">
+                        <small class="text-uppercase fw-bold mb-2" style="font-size: 0.65rem; color: var(--accent-color);">
+                            {{ product.category.name }}
+                        </small>
+                        
+                        <a href="{% url 'product_detail' product.slug %}" class="product-link">
+                            <h5 class="text-white mb-3" style="font-weight:600;">{{ product.name }}</h5>
+                        </a>
+                        
+                        <div class="mt-auto d-flex align-items-center justify-content-between">
+                            <span class="fs-5 fw-bold text-white">${{ product.price }}</span>
+                            <a href="{% url 'add_to_cart' product.id %}" class="btn-emerald-pill btn-sm px-3 py-2 btn-ajax-add" style="font-size: 0.8rem;">
+                                Move to Cart
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-wishlist">
+            <div class="mb-4" style="font-size: 4rem;">✨</div>
+            <h2 class="text-white fw-bold mb-3">Your wishlist is empty</h2>
+            <p class="text-secondary mb-5 mx-auto" style="max-width: 400px;">Save the items you love and they will appear here for easy access later.</p>
+            <a href="{% url 'product_list' %}" class="btn-emerald-pill px-5 py-3">Browse Products</a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

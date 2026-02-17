@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Reusing similar styles for consistency */
+    .auth-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auth-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 3rem;
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .form-control {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 12px 15px;
+    }
+
+    .btn-auth-submit {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="container auth-container">
+    <div class="auth-card">
+        <div class="auth-header text-center mb-4">
+            <h2 class="text-white fw-bold">Welcome Back</h2>
+            <p class="text-secondary">Please enter your details.</p>
+        </div>
+
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="alert alert-danger py-2 small">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label" style="color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label" style="color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-auth-submit">Sign In</button>
+        </form>
+
+        <div class="auth-footer mt-4 text-center" style="color: #94a3b8; font-size: 0.9rem;">
+            Don't have an account? <a href="{% url 'register' %}" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Sign Up</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
