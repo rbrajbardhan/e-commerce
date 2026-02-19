@@ -1,14 +1,45 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
+import random
+from django import forms 
 
 from .forms import (
     UserRegisterForm,
     UserLoginForm,
     UserUpdateForm,
-    ProfileUpdateForm
+    ProfileUpdateForm,
+    AuthenticationForm
 )
+
+def send_otp_email(user):
+    otp = str(random.randint(100000,999999))
+    profile = user.profile
+    profile.otp = otp
+    profile.save()
+
+    send_mail(
+        "ShopX Secure Access - Your OTP",
+        f'Hello {user.username}, \n\nYour One-Time Password (OTP) is: {otp}\n\nPlease enter this code to finalize your access.\n\nStay Secure,\nShopX Team',
+        'noreply@shopx.com',
+        [user.email],
+        fail_silently=False,
+    )
+
+class OTPform(forms.Form):
+    otp = forms.CharField(max_length=6, min_length=6, widget=forms.TextInput(attrs={
+        'class': 'form-control bg-dark text-white border-secondary text-center fs-4',
+        'placeholder': '000000'
+    }))
+
+class PasswordlessLoginForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'class': 'form-control bg-dark text-white border-secondary',
+        'placeholder': 'Enter registered email'
+    }))
 
 def register(request):
     """Handles user registration and captures role selection."""
@@ -19,32 +50,66 @@ def register(request):
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save() 
-            
-            selected_role = form.cleaned_data.get('role')
-            if selected_role:
-                user.profile.role = selected_role
-                user.profile.save()
-
             login(request, user)
-            messages.success(request, f"Welcome to ShopX, {user.username}!")
-            
-            if selected_role == 'Vendor':
-                return redirect('vendor_dashboard')
+            messages.success(request, f"Welcome to ShopX, {user.username}! Your account has been created.")
             return redirect('product_list')
     else:
         form = UserRegisterForm()
 
     return render(request, "users/register.html", {"form": form})
 
-
 def login_view(request):
-    """Handles secure login and redirects based on SRS role requirements."""
-    if request.user.is_authenticated:
-        return redirect('product_list')
+    form = AuthenticationForm()
+    otp_login_form = PasswordlessLoginForm()
 
-    if request.method == "POST":
-        form = UserLoginForm(request, data=request.POST)
+    if request.method == 'POST':
+        # OPTION 1: Passwordless OTP Login Request
+        if 'request_otp' in request.POST:
+            otp_login_form = PasswordlessLoginForm(request.POST)
+            if otp_login_form.is_valid():
+                email = otp_login_form.cleaned_data.get('email')
+                try:
+                    user = User.objects.get(email=email)
+                    send_otp_email(user)
+                    request.session['temp_user_id'] = user.id
+                    messages.info(request, "OTP sent to your email for passwordless login.")
+                    return redirect('verify_otp')
+                except User.DoesNotExist:
+                    messages.error(request, "No account found with this email.")
+        
+        # OPTION 2: Standard Username/Password Login
+        else:
+            form = AuthenticationForm(request, data=request.POST)
+            if form.is_valid():
+                username = form.cleaned_data.get('username')
+                password = form.cleaned_data.get('password')
+                user = authenticate(username=username, password=password)
+                
+                if user is not None:
+                    send_otp_email(user)
+                    request.session['temp_user_id'] = user.id
+                    messages.info(request, "Credentials verified. Please enter the OTP sent to your email.")
+                    return redirect('verify_otp')
+            else:
+                messages.error(request, "Invalid username or password.")
+
+    return render(request, 'users/login.html', {
+        'form': form, 
+        'otp_login_form': otp_login_form
+    })
+
+# View to handle both Registration and Login OTP verification.
+def verify_otp(request):
+    user_id = request.session.get('temp_user_id')
+    if not user_id:
+        return redirect('login')
+    
+    user = User.objects.get(id=user_id)
+    
+    if request.method == 'POST':
+        form = OTPform(request.POST)
         if form.is_valid():
+            # Get user object directly from form to avoid AnonymousUser issues
             user = form.get_user()
             login(request, user)
             
@@ -54,20 +119,14 @@ def login_view(request):
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
-            
-            role = user.profile.role
-            if role == 'Vendor':
-                return redirect('vendor_dashboard')
-            elif role == 'Admin':
-                return redirect('/admin/') 
-            
             return redirect('product_list')
         else:
             messages.error(request, "Invalid username or password. Please try again.")
     else:
-        form = UserLoginForm()
+        form = OTPform()
+    
+    return render(request, 'users/verify_otp.html', {'form': form, 'user_email': user.email})
 
-    return render(request, "users/login.html", {"form": form})
 
 
 def logout_view(request):
