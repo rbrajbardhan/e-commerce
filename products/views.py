@@ -92,7 +92,6 @@ def toggle_wishlist(request, product_id):
         added = True
         message = f"{product.name} added to wishlist."
         
-    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             'status': 'success',
@@ -171,11 +170,14 @@ def update_cart(request, product_id):
 
 @vendor_required
 def vendor_dashboard(request):
-    """Dashboard for vendors with database-level revenue aggregation."""
-    my_products = Product.objects.filter(vendor=request.user)
+    """
+    Dashboard for vendors with database-level revenue aggregation.
+    Orders products by most recent to ensure new data appears at the top.
+    """
+    my_products = Product.objects.filter(vendor=request.user).order_by('-id')
     my_sales = OrderItem.objects.filter(product__vendor=request.user)
     
-    # Efficiently calculate revenue using DB aggregation
+    # Calculate revenue using Sum and F expressions for efficiency
     stats = my_sales.aggregate(
         total_revenue=Sum(F('price') * F('quantity'))
     )
@@ -189,14 +191,15 @@ def vendor_dashboard(request):
 
 @vendor_required
 def vendor_add_product(request):
-    """Vendor-facing form to add new inventory."""
+    """Vendor-facing form to add new inventory. Automatically sets product to available."""
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save(commit=False)
             product.vendor = request.user
+            product.available = True  # AUTOMATICALLY SET VISIBILITY
             product.save()
-            messages.success(request, f"Product '{product.name}' listed!")
+            messages.success(request, f"Product '{product.name}' listed successfully!")
             return redirect('vendor_dashboard')
     else:
         form = ProductForm()
@@ -213,8 +216,10 @@ def vendor_edit_product(request, slug):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Product updated.")
+            product = form.save(commit=False)
+            product.available = True # ENSURE EDITED PRODUCTS REMAIN VISIBLE
+            product.save()
+            messages.success(request, f"Product '{product.name}' updated successfully.")
             return redirect('vendor_dashboard')
     else:
         form = ProductForm(instance=product)
@@ -230,6 +235,6 @@ def vendor_delete_product(request, slug):
     product = get_object_or_404(Product, slug=slug, vendor=request.user)
     if request.method == 'POST':
         product.delete()
-        messages.success(request, "Product removed.")
+        messages.success(request, "Product removed from your inventory.")
         return redirect('vendor_dashboard')
     return render(request, 'products/vendor_confirm_delete.html', {'product': product})

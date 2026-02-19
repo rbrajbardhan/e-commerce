@@ -15,8 +15,10 @@ from .forms import (
     AuthenticationForm
 )
 
+# --- HELPER FUNCTIONS ---
+
 def send_otp_email(user):
-    otp = str(random.randint(100000,999999))
+    otp = str(random.randint(100000, 999999))
     profile = user.profile
     profile.otp = otp
     profile.save()
@@ -28,6 +30,8 @@ def send_otp_email(user):
         [user.email],
         fail_silently=False,
     )
+
+# --- FORMS ---
 
 class OTPform(forms.Form):
     otp = forms.CharField(max_length=6, min_length=6, widget=forms.TextInput(attrs={
@@ -41,19 +45,26 @@ class PasswordlessLoginForm(forms.Form):
         'placeholder': 'Enter registered email'
     }))
 
+# --- VIEWS ---
+
 def register(request):
-    """Handles user registration and automatic profile creation."""
+    """Handles user registration and captures role selection."""
     if request.user.is_authenticated:
         return redirect('product_list')
 
     if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            # Saving user triggers the consolidated signal in models.py
             user = form.save() 
-            # Registration Welcome message and OTP.
+            
+            # Update the profile with the selected role from the POST data
+            selected_role = request.POST.get('role')
+            if selected_role:
+                user.profile.role = selected_role
+                user.profile.save()
+
             send_otp_email(user)
-            messages.success(request, f'Account created for {user.username}! A verification OTP has been sent to your email.')
+            messages.success(request, f'Account created! A verification OTP has been sent to {user.email}.')
             request.session['temp_user_id'] = user.id
             return redirect('verify_otp')
     else:
@@ -62,6 +73,7 @@ def register(request):
     return render(request, "users/register.html", {"form": form})
 
 def login_view(request):
+    """Standard and Passwordless Login entry points."""
     form = AuthenticationForm()
     otp_login_form = PasswordlessLoginForm()
 
@@ -75,7 +87,7 @@ def login_view(request):
                     user = User.objects.get(email=email)
                     send_otp_email(user)
                     request.session['temp_user_id'] = user.id
-                    messages.info(request, "OTP sent to your email for passwordless login.")
+                    messages.info(request, "OTP sent for passwordless login.")
                     return redirect('verify_otp')
                 except User.DoesNotExist:
                     messages.error(request, "No account found with this email.")
@@ -84,15 +96,11 @@ def login_view(request):
         else:
             form = AuthenticationForm(request, data=request.POST)
             if form.is_valid():
-                username = form.cleaned_data.get('username')
-                password = form.cleaned_data.get('password')
-                user = authenticate(username=username, password=password)
-                
-                if user is not None:
-                    send_otp_email(user)
-                    request.session['temp_user_id'] = user.id
-                    messages.info(request, "Credentials verified. Please enter the OTP sent to your email.")
-                    return redirect('verify_otp')
+                user = form.get_user() # Retrieve user directly from validated form
+                send_otp_email(user)
+                request.session['temp_user_id'] = user.id
+                messages.info(request, "Credentials verified. Please enter the OTP sent to your email.")
+                return redirect('verify_otp')
             else:
                 messages.error(request, "Invalid username or password.")
 
@@ -101,8 +109,8 @@ def login_view(request):
         'otp_login_form': otp_login_form
     })
 
-# View to handle both Registration and Login OTP verification.
 def verify_otp(request):
+    """Final gate: Verifies OTP and redirects user based on their Profile Role."""
     user_id = request.session.get('temp_user_id')
     if not user_id:
         return redirect('login')
@@ -114,9 +122,9 @@ def verify_otp(request):
         if form.is_valid():
             entered_otp = form.cleaned_data.get('otp')
             if user.profile.otp == entered_otp:
-                # Mark profile as verified
+                # Mark as verified and clear OTP
                 user.profile.is_verified = True
-                user.profile.otp = None # Clear OTP after use
+                user.profile.otp = None 
                 user.profile.save()
                 
                 # Finalize Login
@@ -124,7 +132,15 @@ def verify_otp(request):
                 del request.session['temp_user_id']
                 
                 messages.success(request, f"Welcome back, {user.username}!")
-                return redirect('product_list')
+
+                # --- NEW ROLE-BASED REDIRECTION LOGIC ---
+                role = user.profile.role
+                if role == 'Vendor':
+                    return redirect('vendor_dashboard')
+                elif role == 'Admin':
+                    return redirect('/admin/')
+                
+                return redirect('product_list') # Customers go to shop
             else:
                 messages.error(request, "Invalid OTP. Please try again.")
     else:
@@ -132,44 +148,28 @@ def verify_otp(request):
     
     return render(request, 'users/verify_otp.html', {'form': form, 'user_email': user.email})
 
-
-
 def logout_view(request):
-    """Securely terminates user session."""
     logout(request)
-    messages.info(request, "You have been safely logged out.")
+    messages.info(request, "Logged out successfully.")
     return redirect('product_list')
-
 
 @login_required
 def profile(request):
-    """Displays user-specific profile data based on role."""
     return render(request, "users/profile.html")
-
 
 @login_required
 def profile_edit(request):
-    """Simultaneously updates User and Profile models with error handling."""
     if request.method == "POST":
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(
-            request.POST,
-            request.FILES, 
-            instance=request.user.profile
-        )
+        p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
 
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
             p_form.save()
-            messages.success(request, "Success! Your profile settings have been updated.")
+            messages.success(request, "Profile updated!")
             return redirect('profile')
-        else:
-            messages.error(request, "Please correct the errors below.")
     else:
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=request.user.profile)
 
-    return render(request, "users/profile_edit.html", {
-        "u_form": u_form,
-        "p_form": p_form
-    })
+    return render(request, "users/profile_edit.html", {"u_form": u_form, "p_form": p_form})

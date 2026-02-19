@@ -66,11 +66,80 @@
         }
 
         .search-input { background: transparent !important; border: none !important; color: white !important; box-shadow: none !important; font-size: 0.9rem; }
+        .search-input::placeholder { color: rgba(255, 255, 255, 0.5) !important; opacity: 1; }
 
         .nav-profile-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.1); }
-        .dropdown-menu-dark { background: #1e293b; border: 1px solid var(--glass-border); border-radius: 16px; margin-top: 15px !important; }
         .nav-link-custom { color: #94a3b8 !important; font-weight: 600; font-size: 0.95rem; transition: 0.3s; text-decoration: none; }
         .nav-link-custom:hover, .nav-link-custom.active { color: #fff !important; }
+
+        /* --- ENHANCED FOOTER STYLES --- */
+        .modern-footer { 
+            background: rgba(15, 23, 42, 0.9); 
+            border-top: 1px solid var(--glass-border); 
+            padding: 80px 0 40px; 
+            margin-top: 100px; 
+        }
+
+        .footer-heading {
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-link { color: #94a3b8; text-decoration: none; display: block; margin-bottom: 0.8rem; transition: 0.3s; font-size: 0.9rem; }
+        .footer-link:hover { color: var(--accent-color); padding-left: 5px; }
+
+        .newsletter-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 5px;
+            display: flex;
+        }
+
+        .newsletter-input {
+            background: transparent !important;
+            border: none !important;
+            color: white !important;
+            box-shadow: none !important;
+            padding-left: 15px;
+            flex-grow: 1;
+        }
+
+        .newsletter-btn {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .newsletter-btn:hover { background: var(--accent-hover); }
+
+        .social-links { display: flex; gap: 15px; margin-top: 20px; }
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.3s;
+            border: 1px solid var(--glass-border);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .social-icon:hover { background: var(--accent-color); color: white; transform: translateY(-3px); }
+
+        .trust-badge { opacity: 0.5; transition: 0.3s; cursor: pointer; font-size: 1.2rem; }
+        .trust-badge:hover { opacity: 1; }
 
         /* --- TOASTS --- */
         #toast-container { position: fixed; top: 100px; right: 20px; z-index: 10005; display: flex; flex-direction: column; gap: 12px; }
@@ -92,10 +161,6 @@
 
         .cart-badge { position: absolute; top: -5px; right: -10px; font-size: 0.65rem; background-color: var(--accent-color) !important; border: 2px solid #0f172a; }
         .btn-emerald-pill { background: var(--accent-color); color: white; border-radius: 50px; font-weight: 700; padding: 8px 24px; border: none; text-decoration: none; }
-
-        .modern-footer { background: rgba(15, 23, 42, 0.9); border-top: 1px solid var(--glass-border); padding: 60px 0 30px; margin-top: 100px; }
-        .footer-link { color: #94a3b8; text-decoration: none; display: block; margin-bottom: 0.5rem; transition: 0.3s; }
-        .footer-link:hover { color: var(--accent-color); }
     </style>
 </head>
 
@@ -132,7 +197,7 @@
                     <a class="dropdown-toggle d-flex align-items-center text-decoration-none" href="#" data-bs-toggle="dropdown">
                         <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=10b981&color=fff" class="nav-profile-img" alt="User">
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end p-2">
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end p-2 mt-3 border-0 shadow-lg">
                         {% if user.profile.role == 'Vendor' %}
                         <li><a class="dropdown-item fw-bold text-success" href="{% url 'vendor_dashboard' %}">Vendor Console</a></li>
                         <li><hr class="dropdown-divider opacity-25"></li>
@@ -151,28 +216,66 @@
     </div>
 </nav>
 
-<main>{% block content %}{% endblock %}</main>
+<main>
+    {% block content %}{% endblock %}
+</main>
 
-<footer class="modern-footer text-secondary">
+<footer class="modern-footer">
     <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <h4 class="text-white fw-bold mb-4">ShopX</h4>
-                <p>Premium gear for the modern lifestyle. Curating the finest essentials since 2026.</p>
+        <div class="row g-5">
+            <div class="col-lg-4 col-md-12">
+                <h4 class="text-white fw-bold mb-3">ShopX</h4>
+                <p class="text-secondary opacity-75 pe-lg-4">
+                    Elevating your digital lifestyle with curated premium hardware and essentials. Join our community of enthusiasts.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-icon" title="Instagram">IG</a>
+                    <a href="#" class="social-icon" title="Twitter">TW</a>
+                    <a href="#" class="social-icon" title="Discord">DC</a>
+                </div>
             </div>
-            <div class="col-md-2">
-                <h6 class="text-white mb-3">Shop</h6>
-                <a href="{% url 'product_list' %}" class="footer-link">Products</a>
+
+            <div class="col-lg-2 col-6">
+                <h6 class="footer-heading">Shop</h6>
+                <a href="{% url 'product_list' %}" class="footer-link">All Products</a>
                 <a href="{% url 'wishlist' %}" class="footer-link">Wishlist</a>
+                <a href="#" class="footer-link">New Arrivals</a>
+                <a href="#" class="footer-link">Sale Items</a>
             </div>
-            <div class="col-md-2">
-                <h6 class="text-white mb-3">Account</h6>
-                <a href="{% url 'order_history' %}" class="footer-link">Orders</a>
-                <a href="{% url 'profile' %}" class="footer-link">Profile</a>
+
+            <div class="col-lg-2 col-6">
+                <h6 class="footer-heading">Support</h6>
+                <a href="{% url 'order_history' %}" class="footer-link">Track Order</a>
+                <a href="{% url 'profile' %}" class="footer-link">My Account</a>
+                <a href="#" class="footer-link">Shipping Policy</a>
+                <a href="#" class="footer-link">FAQ</a>
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+                <h6 class="footer-heading">Stay Updated</h6>
+                <p class="text-secondary small mb-3">Subscribe for exclusive drops and limited hardware releases.</p>
+                <form class="newsletter-container">
+                    <input type="email" class="form-control newsletter-input" placeholder="Enter your email">
+                    <button type="submit" class="newsletter-btn">Join</button>
+                </form>
+                <div class="mt-4 d-flex align-items-center gap-3">
+                    <span class="text-secondary small">Secure Payments:</span>
+                    <span class="trust-badge">💳</span>
+                    <span class="trust-badge">🍎</span>
+                    <span class="trust-badge">₿</span>
+                </div>
             </div>
         </div>
-        <hr class="border-secondary opacity-10 my-4">
-        <p class="small">© {% now "Y" %} ShopX Inc. All rights reserved.</p>
+
+        <hr class="border-secondary opacity-10 my-5">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 pb-4">
+            <p class="small text-secondary mb-0">© {% now "Y" %} ShopX Inc. All rights reserved.</p>
+            <div class="d-flex gap-4">
+                <a href="#" class="footer-link small mb-0">Privacy Policy</a>
+                <a href="#" class="footer-link small mb-0">Terms of Service</a>
+            </div>
+        </div>
     </div>
 </footer>
 
@@ -196,22 +299,24 @@
     function showManualToast(msg, type) {
         const id = 'toast-' + Math.random().toString(36).substr(2, 9);
         const html = `<div class="modern-toast toast-${type}" id="${id}">${msg}</div>`;
-        document.getElementById('toast-container').insertAdjacentHTML('beforeend', html);
-        setTimeout(() => dismissToast(id), 4000);
+        const container = document.getElementById('toast-container');
+        if(container) {
+            container.insertAdjacentHTML('beforeend', html);
+            setTimeout(() => dismissToast(id), 4000);
+        }
     }
 
-    // SHARED HEADERS FOR AJAX
     const ajaxHeaders = {
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRFToken': '{{ csrf_token }}'
     };
 
-    // 1. ADD TO CART HANDLER
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.btn-ajax-add');
-        if (btn) {
+        // 1. ADD TO CART HANDLER
+        const cartBtn = e.target.closest('.btn-ajax-add');
+        if (cartBtn) {
             e.preventDefault();
-            fetch(btn.getAttribute('href'), { headers: ajaxHeaders })
+            fetch(cartBtn.getAttribute('href'), { headers: ajaxHeaders })
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
@@ -221,18 +326,16 @@
             })
             .catch(() => showManualToast('Cart connection error', 'error'));
         }
-    });
 
-    // 2. WISHLIST TOGGLE HANDLER
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.wishlist-btn');
-        if (btn) {
+        // 2. WISHLIST TOGGLE HANDLER
+        const wishlistBtn = e.target.closest('.wishlist-btn');
+        if (wishlistBtn) {
             e.preventDefault();
-            fetch(`/products/wishlist/toggle/${btn.dataset.id}/`, { headers: ajaxHeaders })
+            fetch(`/products/wishlist/toggle/${wishlistBtn.dataset.id}/`, { headers: ajaxHeaders })
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
-                    const svg = btn.querySelector('svg');
+                    const svg = wishlistBtn.querySelector('svg');
                     if (data.added) {
                         svg.setAttribute('fill', '#ef4444');
                         svg.setAttribute('stroke', '#ef4444');
@@ -247,7 +350,6 @@
         }
     });
 
-    // Auto-dismiss Django messages
     document.querySelectorAll('.modern-toast').forEach(t => setTimeout(() => dismissToast(t.id), 4000));
 </script>
 </body>
