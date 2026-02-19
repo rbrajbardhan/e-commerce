@@ -18,16 +18,29 @@
         max-width: 600px;
     }
 
-    .edit-card label {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #94a3b8;
-        margin-bottom: 0.5rem;
-        margin-top: 1.2rem;
+    /* Manually styling the Django form output */
+    .form-group {
+        margin-bottom: 1.5rem;
     }
 
-    .edit-card input, .edit-card textarea {
+    .form-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.6rem;
+    }
+
+    /* Target all input types rendered by Django */
+    .edit-card input[type="text"], 
+    .edit-card input[type="email"], 
+    .edit-card input[type="password"],
+    .edit-card input[type="number"],
+    .edit-card input[type="tel"],
+    .edit-card textarea,
+    .edit-card select {
         width: 100%;
         background: rgba(0, 0, 0, 0.2) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -35,10 +48,18 @@
         border-radius: 12px;
         padding: 12px 16px;
         outline: none;
+        transition: 0.3s;
     }
 
-    .edit-card input:focus {
+    /* File input specific styling */
+    .edit-card input[type="file"] {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .edit-card input:focus, .edit-card textarea:focus {
         border-color: var(--accent-color) !important;
+        background: rgba(16, 185, 129, 0.05) !important;
     }
 
     .btn-save {
@@ -49,7 +70,7 @@
         padding: 14px;
         font-weight: 700;
         width: 100%;
-        margin-top: 2rem;
+        margin-top: 1rem;
         transition: 0.3s;
     }
 
@@ -57,25 +78,58 @@
         background: var(--accent-hover);
         transform: translateY(-2px);
     }
+
+    /* Errors styling */
+    .errorlist {
+        color: #ef4444;
+        font-size: 0.8rem;
+        list-style: none;
+        padding: 0;
+        margin-top: 5px;
+    }
 </style>
 
 <div class="container edit-container">
     <div class="edit-card">
-        <h2 class="text-white fw-bold mb-4">Edit Profile Settings</h2>
+        <div class="text-center mb-4">
+            <h2 class="text-white fw-bold">Update Profile</h2>
+            <p class="text-secondary small">Keep your account information accurate and up to date.</p>
+        </div>
         
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <h5 class="text-secondary small text-uppercase fw-bold mb-3" style="letter-spacing: 1px;">Account Info</h5>
-            {{ u_form.as_p }}
+            <h5 class="text-secondary small text-uppercase fw-bold mb-3" style="letter-spacing: 1px;">Account Basics</h5>
+            {% for field in u_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {{ field.errors }}
+                    {% endif %}
+                </div>
+            {% endfor %}
             
             <hr class="border-secondary opacity-10 my-4">
             
-            <h5 class="text-secondary small text-uppercase fw-bold mb-3" style="letter-spacing: 1px;">Personal Details</h5>
-            {{ p_form.as_p }}
+            <h5 class="text-secondary small text-uppercase fw-bold mb-3" style="letter-spacing: 1px;">Personal Information</h5>
+            {% for field in p_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="text-secondary d-block mt-1" style="font-size: 0.7rem;">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                        {{ field.errors }}
+                    {% endif %}
+                </div>
+            {% endfor %}
 
-            <button type="submit" class="btn-save">Save All Changes</button>
-            <a href="{% url 'profile' %}" class="btn btn-link w-100 text-secondary text-decoration-none mt-2">Cancel</a>
+            <button type="submit" class="btn-save">Confirm & Save Changes</button>
+            <a href="{% url 'profile' %}" class="btn btn-link w-100 text-secondary text-decoration-none mt-2 small">
+                Back to Profile
+            </a>
         </form>
     </div>
 </div>

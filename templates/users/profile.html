@@ -26,6 +26,20 @@
         overflow: hidden;
     }
 
+    .role-badge {
+        font-size: 0.75rem;
+        padding: 5px 15px;
+        border-radius: 50px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+
+    .badge-vendor { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .badge-customer { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+
     .info-group {
         margin-bottom: 2rem;
         padding-bottom: 1rem;
@@ -41,11 +55,16 @@
         margin-bottom: 0.5rem;
     }
 
-    .info-value {
+    .info-value { color: white; font-size: 1.1rem; font-weight: 500; }
+
+    .btn-emerald {
+        background: var(--accent-color);
         color: white;
-        font-size: 1.1rem;
-        font-weight: 500;
+        border-radius: 14px;
+        font-weight: 700;
+        transition: 0.3s;
     }
+    .btn-emerald:hover { background: var(--accent-hover); transform: translateY(-2px); color: white; }
 </style>
 
 <div class="container mb-5">
@@ -62,35 +81,63 @@
                         {% if user.profile.profile_image %}
                             <img src="{{ user.profile.profile_image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
                         {% else %}
-                            <span class="opacity-50">👤</span>
+                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=10b981&color=fff" style="width: 100%; height: 100%; object-fit: cover;">
                         {% endif %}
                     </div>
+                    
+                    {% if user.profile.role == 'Vendor' %}
+                        <span class="role-badge badge-vendor">Authorized Vendor</span>
+                    {% else %}
+                        <span class="role-badge badge-customer">ShopX Member</span>
+                    {% endif %}
+
                     <h3 class="text-white fw-bold mb-0">{{ user.username }}</h3>
-                    <p class="text-secondary small">Member since {{ user.date_joined|date:"F Y" }}</p>
+                    <p class="text-secondary small">Joined {{ user.date_joined|date:"F Y" }}</p>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">{{ user.get_full_name|default:user.username }}</div>
                 </div>
 
                 <div class="info-group">
                     <div class="info-label">Email Address</div>
-                    <div class="info-value">{{ user.email|default:"Not provided" }}</div>
+                    <div class="info-value">{{ user.email|default:"Not linked" }}</div>
                 </div>
 
                 <div class="info-group">
-                    <div class="info-label">Phone Number</div>
-                    <div class="info-value">{{ user.profile.phone|default:"Not provided" }}</div>
+                    <div class="info-label">Phone Connection</div>
+                    <div class="info-value">{{ user.profile.phone|default:"+0 000 000 000" }}</div>
                 </div>
 
                 <div class="info-group">
-                    <div class="info-label">Shipping Address</div>
-                    <div class="info-value">{{ user.profile.address|default:"No address saved" }}</div>
+                    <div class="info-label">
+                        {% if user.profile.role == 'Vendor' %}Business Location{% else %}Primary Shipping Address{% endif %}
+                    </div>
+                    <div class="info-value">{{ user.profile.address|default:"No details saved" }}</div>
                 </div>
 
                 <div class="d-grid gap-3 mt-5">
-                    <a href="{% url 'profile_edit' %}" class="btn-emerald btn-lg text-center text-decoration-none py-3" style="border-radius: 14px;">
-                        Edit My Profile
+                    <a href="{% url 'profile_edit' %}" class="btn-emerald btn-lg text-center text-decoration-none py-3">
+                        Edit Profile Details
                     </a>
-                    <a href="{% url 'order_history' %}" class="btn btn-outline-light border-secondary py-3" style="border-radius: 14px;">
-                        View Purchase History
-                    </a>
+                    
+                    {% if user.profile.role == 'Vendor' %}
+                        <a href="{% url 'vendor_dashboard' %}" class="btn btn-outline-success py-3" style="border-radius: 14px; border-width: 2px; font-weight: 700;">
+                            Go to Vendor Console
+                        </a>
+                    {% else %}
+                        <a href="{% url 'order_history' %}" class="btn btn-outline-light border-secondary py-3" style="border-radius: 14px;">
+                            Track Order History
+                        </a>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link text-danger text-decoration-none w-100 small mt-2">
+                            Securely Log Out
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
