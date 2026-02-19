@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-    /* Reusing similar styles for consistency */
     .auth-container {
         min-height: 80vh;
         display: flex;
@@ -20,12 +19,32 @@
         max-width: 420px;
     }
 
+    /* Tab Styling */
+    .nav-pills .nav-link {
+        color: #94a3b8;
+        font-weight: 600;
+        border-radius: 12px;
+        margin: 0 5px;
+        transition: 0.3s;
+    }
+
+    .nav-pills .nav-link.active {
+        background: var(--accent-color) !important;
+        color: white !important;
+    }
+
     .form-control {
         background: rgba(0, 0, 0, 0.2) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: white !important;
         border-radius: 12px;
         padding: 12px 15px;
+    }
+
+    /* --- PLACEHOLDER VISIBILITY FIX --- */
+    .form-control::placeholder {
+        color: #94a3b8 !important;
+        opacity: 0.8 !important;
     }
 
     .btn-auth-submit {
@@ -37,6 +56,12 @@
         font-weight: 700;
         width: 100%;
         margin-top: 1rem;
+        transition: 0.3s;
+    }
+
+    .btn-auth-submit:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
     }
 </style>
 
@@ -44,31 +69,50 @@
     <div class="auth-card">
         <div class="auth-header text-center mb-4">
             <h2 class="text-white fw-bold">Welcome Back</h2>
-            <p class="text-secondary">Please enter your details.</p>
+            <p class="text-secondary">Choose your preferred login method.</p>
         </div>
 
-        {% if form.non_field_errors %}
-            {% for error in form.non_field_errors %}
-                <div class="alert alert-danger py-2 small">{{ error }}</div>
-            {% endfor %}
-        {% endif %}
+        <ul class="nav nav-pills mb-4 justify-content-center" id="loginTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pass-tab" data-bs-toggle="pill" data-bs-target="#pass-content" type="button">Password</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="otp-tab" data-bs-toggle="pill" data-bs-target="#otp-content" type="button">Email OTP</button>
+            </li>
+        </ul>
 
-        <form method="POST">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label" style="color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Username</label>
-                <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+        <div class="tab-content" id="loginTabsContent">
+            <div class="tab-pane fade show active" id="pass-content" role="tabpanel">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter your username" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn-auth-submit">Sign In</button>
+                </form>
             </div>
-            <div class="mb-4">
-                <label class="form-label" style="color: #94a3b8; font-weight: 600; font-size: 0.85rem;">Password</label>
-                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+
+            <div class="tab-pane fade" id="otp-content" role="tabpanel">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold">Registered Email</label>
+                        {{ otp_login_form.email }}
+                    </div>
+                    <button type="submit" name="request_otp" class="btn-auth-submit">Send Login OTP</button>
+                </form>
             </div>
+        </div>
 
-            <button type="submit" class="btn-auth-submit">Sign In</button>
-        </form>
-
-        <div class="auth-footer mt-4 text-center" style="color: #94a3b8; font-size: 0.9rem;">
-            Don't have an account? <a href="{% url 'register' %}" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Sign Up</a>
+        <div class="auth-footer mt-4 text-center">
+            <p class="text-secondary small">Don't have an account? 
+                <a href="{% url 'register' %}" class="text-accent fw-bold text-decoration-none">Sign Up</a>
+            </p>
         </div>
     </div>
 </div>
