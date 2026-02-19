@@ -1,254 +1,298 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>ShopX | Premium Marketplace</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
-        :root {
-            --accent-color: #10b981; 
-            --accent-hover: #059669;
-            --bg-dark: #0f172a;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --wishlist-active: #ef4444;
-        }
+      :root {
+          --accent-color: #10b981;
+          --accent-hover: #059669;
+          --bg-dark: #0f172a;
+          --glass-bg: rgba(255, 255, 255, 0.03);
+          --glass-border: rgba(255, 255, 255, 0.08);
+          --wishlist-active: #ef4444;
+      }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a) no-repeat fixed;
-            color: #f8fafc;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-        }
+      body {
+          font-family: 'Inter', sans-serif;
+          background: radial-gradient(circle at top right, #1e293b, #0f172a) no-repeat fixed;
+          color: #f8fafc;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          margin: 0;
+      }
 
-        main { flex: 1 0 auto; }
+      main { flex: 1 0 auto; }
 
-        /* --- MODERN NAVBAR --- */
-        .modern-navbar {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 0.7rem 2rem;
-            z-index: 9999;
-        }
+      /* --- MODERN NAVBAR --- */
+      .modern-navbar {
+          background: rgba(15, 23, 42, 0.8);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--glass-border);
+          padding: 0.7rem 2rem;
+          z-index: 9999;
+      }
 
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.6rem;
-            margin-right: 2.5rem;
-            background: linear-gradient(to right, #fff, var(--accent-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+      .navbar-brand {
+          font-weight: 800;
+          font-size: 1.6rem;
+          margin-right: 2.5rem;
+          background: linear-gradient(to right, #fff, var(--accent-color));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+      }
 
-        .search-wrapper {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 450px;
-        }
+      .search-wrapper {
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100%;
+          max-width: 450px;
+      }
 
-        .search-container {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            transition: 0.3s;
-        }
+      .search-container {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--glass-border);
+          border-radius: 12px;
+          transition: 0.3s;
+      }
 
-        .search-input { background: transparent !important; border: none !important; color: white !important; box-shadow: none !important; font-size: 0.9rem; }
+      .search-input { background: transparent !important; border: none !important; color: white !important; box-shadow: none !important; font-size: 0.9rem; }
 
-        .nav-profile-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.1); }
-        .dropdown-menu-dark { background: #1e293b; border: 1px solid var(--glass-border); border-radius: 16px; margin-top: 15px !important; }
-        .nav-link-custom { color: #94a3b8 !important; font-weight: 600; font-size: 0.95rem; transition: 0.3s; text-decoration: none; }
-        .nav-link-custom:hover, .nav-link-custom.active { color: #fff !important; }
+    
+      ::placeholder {
+          color: #94a3b8 !important;
+          opacity: 0.8;
+      }
 
-        /* --- TOASTS --- */
-        #toast-container { position: fixed; top: 100px; right: 20px; z-index: 10005; display: flex; flex-direction: column; gap: 12px; }
-        .modern-toast {
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 16px 24px;
-            border-radius: 16px;
-            min-width: 300px;
-            animation: toastIn 0.5s ease forwards;
-        }
-        .toast-success { border-left: 4px solid var(--accent-color); }
-        .toast-error { border-left: 4px solid #ef4444; }
-        @keyframes toastIn { from { transform: translateX(110%); } to { transform: translateX(0); } }
-        .toast-fade-out { animation: toastOut 0.5s ease forwards; }
-        @keyframes toastOut { to { transform: translateX(110%); opacity: 0; } }
+      .search-input::placeholder {
+          color: #cbd5e1 !important;
+      }
 
-        .cart-badge { position: absolute; top: -5px; right: -10px; font-size: 0.65rem; background-color: var(--accent-color) !important; border: 2px solid #0f172a; }
-        .btn-emerald-pill { background: var(--accent-color); color: white; border-radius: 50px; font-weight: 700; padding: 8px 24px; border: none; text-decoration: none; }
+      /* Browser-specific Placeholder support */
+      ::-webkit-input-placeholder { color: #94a3b8 !important; }
+      :-ms-input-placeholder { color: #94a3b8 !important; }
+      ::-moz-placeholder { color: #94a3b8 !important; opacity: 0.8; }
 
-        .modern-footer { background: rgba(15, 23, 42, 0.9); border-top: 1px solid var(--glass-border); padding: 60px 0 30px; margin-top: 100px; }
-        .footer-link { color: #94a3b8; text-decoration: none; display: block; margin-bottom: 0.5rem; transition: 0.3s; }
-        .footer-link:hover { color: var(--accent-color); }
+      .nav-profile-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.1); }
+      .dropdown-menu-dark { background: #1e293b; border: 1px solid var(--glass-border); border-radius: 16px; margin-top: 15px !important; }
+      .nav-link-custom { color: #94a3b8 !important; font-weight: 600; font-size: 0.95rem; transition: 0.3s; text-decoration: none; }
+      .nav-link-custom:hover, .nav-link-custom.active { color: #fff !important; }
+
+      /* --- TOASTS --- */
+      #toast-container { position: fixed; top: 100px; right: 20px; z-index: 10005; display: flex; flex-direction: column; gap: 12px; }
+      .modern-toast {
+          background: rgba(30, 41, 59, 0.95);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: white;
+          padding: 16px 24px;
+          border-radius: 16px;
+          min-width: 300px;
+          animation: toastIn 0.5s ease forwards;
+      }
+      .toast-success { border-left: 4px solid var(--accent-color); }
+      .toast-error { border-left: 4px solid #ef4444; }
+      @keyframes toastIn { from { transform: translateX(110%); } to { transform: translateX(0); } }
+      .toast-fade-out { animation: toastOut 0.5s ease forwards; }
+      @keyframes toastOut { to { transform: translateX(110%); opacity: 0; } }
+
+      .cart-badge { position: absolute; top: -5px; right: -10px; font-size: 0.65rem; background-color: var(--accent-color) !important; border: 2px solid #0f172a; }
+      .btn-emerald-pill { background: var(--accent-color); color: white; border-radius: 50px; font-weight: 700; padding: 8px 24px; border: none; text-decoration: none; }
+
+      .modern-footer { background: rgba(15, 23, 42, 0.9); border-top: 1px solid var(--glass-border); padding: 60px 0 30px; margin-top: 100px; }
+      .footer-link { color: #94a3b8; text-decoration: none; display: block; margin-bottom: 0.5rem; transition: 0.3s; }
+      .footer-link:hover { color: var(--accent-color); }
     </style>
-</head>
+  </head>
 
-<body>
-
-<nav class="navbar navbar-expand-lg modern-navbar sticky-top">
-    <div class="container-fluid">
+  <body>
+    <nav class="navbar navbar-expand-lg modern-navbar sticky-top">
+      <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'product_list' %}">ShopX</a>
         <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link nav-link-custom {% if request.path == '/' %}active{% endif %}" href="{% url 'product_list' %}">Home</a></li>
-                {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link nav-link-custom" href="{% url 'order_history' %}">My Orders</a></li>
-                <li class="nav-item"><a class="nav-link nav-link-custom" href="{% url 'wishlist' %}">Wishlist</a></li>
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom {% if request.path == '/' %}active{% endif %}" href="{% url 'product_list' %}">Home</a>
+            </li>
+            {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'order_history' %}">My Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-link-custom" href="{% url 'wishlist' %}">Wishlist</a>
+            </li>
+            {% endif %}
+          </ul>
+
+          <div class="search-wrapper">
+            <form method="GET" action="{% url 'product_list' %}">
+              <div class="input-group search-container">
+                <span class="input-group-text bg-transparent border-0 pe-0 text-secondary">🔍</span>
+                <input
+                  type="text"
+                  name="q"
+                  class="form-control search-input"
+                  placeholder="Search Products..."
+                  value="{{ request.GET.q }}"
+                />
+              </div>
+            </form>
+          </div>
+
+          <div class="ms-auto d-flex align-items-center gap-3">
+            <a class="nav-link text-light position-relative px-2" href="{% url 'cart' %}">
+              🛒
+              <span class="badge rounded-pill cart-badge">{{ request.session.cart|length|default:0 }}</span>
+            </a>
+
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+              <a class="dropdown-toggle d-flex align-items-center text-decoration-none" href="#" data-bs-toggle="dropdown">
+                <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=10b981&color=fff" class="nav-profile-img" alt="User" />
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end p-2">
+                {% if user.profile.role == 'Vendor' %}
+                <li>
+                  <a class="dropdown-item fw-bold text-success" href="{% url 'vendor_dashboard' %}">Vendor Console</a>
+                </li>
+                <li><hr class="dropdown-divider opacity-25" /></li>
                 {% endif %}
-            </ul>
-
-            <div class="search-wrapper">
-                <form method="GET" action="{% url 'product_list' %}">
-                    <div class="input-group search-container">
-                        <span class="input-group-text bg-transparent border-0 pe-0 text-secondary">🔍</span>
-                        <input type="text" name="q" class="form-control search-input" placeholder="Search Products..." value="{{ request.GET.q }}">
-                    </div>
-                </form>
+                <li><a class="dropdown-item" href="{% url 'profile' %}">Settings</a></li>
+                <li><a class="dropdown-item" href="{% url 'wishlist' %}">Wishlist</a></li>
+                <li>
+                  <form method="POST" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-item text-danger">Logout</button>
+                  </form>
+                </li>
+              </ul>
             </div>
-
-            <div class="ms-auto d-flex align-items-center gap-3">
-                <a class="nav-link text-light position-relative px-2" href="{% url 'cart' %}">
-                    🛒 <span class="badge rounded-pill cart-badge">{{ request.session.cart|length|default:0 }}</span>
-                </a>
-
-                {% if user.is_authenticated %}
-                <div class="dropdown">
-                    <a class="dropdown-toggle d-flex align-items-center text-decoration-none" href="#" data-bs-toggle="dropdown">
-                        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=10b981&color=fff" class="nav-profile-img" alt="User">
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end p-2">
-                        {% if user.profile.role == 'Vendor' %}
-                        <li><a class="dropdown-item fw-bold text-success" href="{% url 'vendor_dashboard' %}">Vendor Console</a></li>
-                        <li><hr class="dropdown-divider opacity-25"></li>
-                        {% endif %}
-                        <li><a class="dropdown-item" href="{% url 'profile' %}">Settings</a></li>
-                        <li><a class="dropdown-item" href="{% url 'wishlist' %}">Wishlist</a></li>
-                        <li><form method="POST" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="dropdown-item text-danger">Logout</button></form></li>
-                    </ul>
-                </div>
-                {% else %}
-                <a class="nav-link-custom px-3" href="{% url 'login' %}">Login</a>
-                <a class="btn-emerald-pill" href="{% url 'register' %}">Join</a>
-                {% endif %}
-            </div>
+            {% else %}
+            <a class="nav-link-custom px-3" href="{% url 'login' %}">Login</a>
+            <a class="btn-emerald-pill" href="{% url 'register' %}">Join</a>
+            {% endif %}
+          </div>
         </div>
-    </div>
-</nav>
+      </div>
+    </nav>
 
-<main>{% block content %}{% endblock %}</main>
+    <main>{% block content %}{% endblock %}</main>
 
-<footer class="modern-footer text-secondary">
-    <div class="container">
+    <footer class="modern-footer text-secondary">
+      <div class="container">
         <div class="row">
-            <div class="col-md-4">
-                <h4 class="text-white fw-bold mb-4">ShopX</h4>
-                <p>Premium gear for the modern lifestyle. Curating the finest essentials since 2026.</p>
-            </div>
-            <div class="col-md-2">
-                <h6 class="text-white mb-3">Shop</h6>
-                <a href="{% url 'product_list' %}" class="footer-link">Products</a>
-                <a href="{% url 'wishlist' %}" class="footer-link">Wishlist</a>
-            </div>
-            <div class="col-md-2">
-                <h6 class="text-white mb-3">Account</h6>
-                <a href="{% url 'order_history' %}" class="footer-link">Orders</a>
-                <a href="{% url 'profile' %}" class="footer-link">Profile</a>
-            </div>
+          <div class="col-md-4">
+            <h4 class="text-white fw-bold mb-4">ShopX</h4>
+            <p>Premium gear for the modern lifestyle. Curating the finest essentials since 2026.</p>
+          </div>
+          <div class="col-md-2">
+            <h6 class="text-white mb-3">Shop</h6>
+            <a href="{% url 'product_list' %}" class="footer-link">Products</a>
+            <a href="{% url 'wishlist' %}" class="footer-link">Wishlist</a>
+          </div>
+          <div class="col-md-2">
+            <h6 class="text-white mb-3">Account</h6>
+            <a href="{% url 'order_history' %}" class="footer-link">Orders</a>
+            <a href="{% url 'profile' %}" class="footer-link">Profile</a>
+          </div>
         </div>
-        <hr class="border-secondary opacity-10 my-4">
-        <p class="small">© {% now "Y" %} ShopX Inc. All rights reserved.</p>
-    </div>
-</footer>
+        <hr class="border-secondary opacity-10 my-4" />
+        <div class="d-flex justify-content-between">
+            <p class="small">© {% now "Y" %} ShopX Inc. All rights reserved.</p>
+            <p class="small text-secondary">2026 Edition</p>
+        </div>
+      </div>
+    </footer>
 
-<div id="toast-container">
-    {% if messages %}
+    <div id="toast-container">
+      {% if messages %} 
         {% for message in messages %}
-            <div class="modern-toast toast-{{ message.tags }}" id="msg-{{ forloop.counter }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-</div>
+          <div class="modern-toast toast-{{ message.tags }}" id="msg-{{ forloop.counter }}">
+            {{ message }}
+          </div>
+        {% endfor %} 
+      {% endif %}
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function dismissToast(id) {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function dismissToast(id) {
         const t = document.getElementById(id);
-        if(t) { t.classList.add('toast-fade-out'); setTimeout(() => t.remove(), 500); }
-    }
+        if (t) {
+          t.classList.add("toast-fade-out");
+          setTimeout(() => t.remove(), 500);
+        }
+      }
 
-    function showManualToast(msg, type) {
-        const id = 'toast-' + Math.random().toString(36).substr(2, 9);
+      function showManualToast(msg, type) {
+        const id = "toast-" + Math.random().toString(36).substr(2, 9);
         const html = `<div class="modern-toast toast-${type}" id="${id}">${msg}</div>`;
-        document.getElementById('toast-container').insertAdjacentHTML('beforeend', html);
+        document.getElementById("toast-container").insertAdjacentHTML("beforeend", html);
         setTimeout(() => dismissToast(id), 4000);
-    }
+      }
 
-    // SHARED HEADERS FOR AJAX
-    const ajaxHeaders = {
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': '{{ csrf_token }}'
-    };
+      const ajaxHeaders = {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": "{{ csrf_token }}",
+      };
 
-    // 1. ADD TO CART HANDLER
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.btn-ajax-add');
+      document.addEventListener("click", function (e) {
+        const btn = e.target.closest(".btn-ajax-add");
         if (btn) {
-            e.preventDefault();
-            fetch(btn.getAttribute('href'), { headers: ajaxHeaders })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.querySelectorAll('.cart-badge').forEach(b => b.textContent = data.cart_count);
-                    showManualToast(data.message, 'success');
-                } else { showManualToast(data.message, 'error'); }
+          e.preventDefault();
+          fetch(btn.getAttribute("href"), { headers: ajaxHeaders })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.status === "success") {
+                document.querySelectorAll(".cart-badge").forEach((b) => (b.textContent = data.cart_count));
+                showManualToast(data.message, "success");
+              } else {
+                showManualToast(data.message, "error");
+              }
             })
-            .catch(() => showManualToast('Cart connection error', 'error'));
+            .catch(() => showManualToast("Cart connection error", "error"));
         }
-    });
+      });
 
-    // 2. WISHLIST TOGGLE HANDLER
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.wishlist-btn');
+      document.addEventListener("click", function (e) {
+        const btn = e.target.closest(".wishlist-btn");
         if (btn) {
-            e.preventDefault();
-            fetch(`/products/wishlist/toggle/${btn.dataset.id}/`, { headers: ajaxHeaders })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const svg = btn.querySelector('svg');
-                    if (data.added) {
-                        svg.setAttribute('fill', '#ef4444');
-                        svg.setAttribute('stroke', '#ef4444');
-                    } else {
-                        svg.setAttribute('fill', 'none');
-                        svg.setAttribute('stroke', 'white');
-                    }
-                    showManualToast(data.message, 'success');
+          e.preventDefault();
+          fetch(`/products/wishlist/toggle/${btn.dataset.id}/`, { headers: ajaxHeaders })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.status === "success") {
+                const svg = btn.querySelector("svg");
+                if (data.added) {
+                  svg.setAttribute("fill", "#ef4444");
+                  svg.setAttribute("stroke", "#ef4444");
+                } else {
+                  svg.setAttribute("fill", "none");
+                  svg.setAttribute("stroke", "white");
                 }
+                showManualToast(data.message, "success");
+              }
             })
-            .catch(() => showManualToast('Wishlist connection error', 'error'));
+            .catch(() => showManualToast("Wishlist connection error", "error"));
         }
-    });
+      });
 
-    // Auto-dismiss Django messages
-    document.querySelectorAll('.modern-toast').forEach(t => setTimeout(() => dismissToast(t.id), 4000));
-</script>
-</body>
+      document.querySelectorAll(".modern-toast").forEach((t) => setTimeout(() => dismissToast(t.id), 4000));
+    </script>
+  </body>
 </html>

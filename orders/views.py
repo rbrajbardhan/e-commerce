@@ -5,7 +5,7 @@ from django.db import transaction
 
 from .models import Order, OrderItem
 from products.models import Product
-from products.cart import Cart  # Importing Cart class to centralize logic
+from products.cart import Cart
 
 @login_required
 def checkout(request):
@@ -36,12 +36,11 @@ def place_order(request):
     email = request.POST.get('email')
     address = request.POST.get('address')
 
-    # Use total price directly from the Cart logic
     total_price = cart.get_total_price()
 
     try:
         with transaction.atomic():
-            # Create the Order first (Payment and Status)
+            
             order = Order.objects.create(
                 user=request.user,
                 full_name=full_name,
@@ -49,16 +48,16 @@ def place_order(request):
                 address=address,
                 total_price=total_price,
                 status='Pending',
-                is_paid=False  # Payment Module requirement
+                is_paid=False  
             )
 
-            # Process items and validate stock
+            
             for item in cart:
                 product = item['product']
                 quantity = item['quantity']
 
                 if product.stock < quantity:
-                    # Triggering a manual exception to rollback the transaction
+                    
                     raise ValueError(f"Not enough stock for {product.name}.")
 
                 # Create order items
@@ -73,7 +72,6 @@ def place_order(request):
                 product.stock -= quantity
                 product.save()
 
-            # Clear the cart after successful DB operations
             cart.clear()
 
             messages.success(request, "Order placed successfully! Please proceed to payment.")
@@ -89,7 +87,7 @@ def place_order(request):
 
 @login_required
 def order_history(request):
-    # Ordering by latest created to satisfy UI requirements
+    
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'orders/order_history.html', {
         'orders': orders

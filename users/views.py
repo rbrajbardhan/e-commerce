@@ -11,17 +11,25 @@ from .forms import (
 )
 
 def register(request):
-    """Handles user registration and automatic profile creation."""
+    """Handles user registration and captures role selection."""
     if request.user.is_authenticated:
         return redirect('product_list')
 
     if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            # Saving user triggers the consolidated signal in models.py
             user = form.save() 
+            
+            selected_role = form.cleaned_data.get('role')
+            if selected_role:
+                user.profile.role = selected_role
+                user.profile.save()
+
             login(request, user)
-            messages.success(request, f"Welcome to ShopX, {user.username}! Your account has been created.")
+            messages.success(request, f"Welcome to ShopX, {user.username}!")
+            
+            if selected_role == 'Vendor':
+                return redirect('vendor_dashboard')
             return redirect('product_list')
     else:
         form = UserRegisterForm()
@@ -37,7 +45,6 @@ def login_view(request):
     if request.method == "POST":
         form = UserLoginForm(request, data=request.POST)
         if form.is_valid():
-            # Get user object directly from form to avoid AnonymousUser issues
             user = form.get_user()
             login(request, user)
             
@@ -47,6 +54,13 @@ def login_view(request):
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
+            
+            role = user.profile.role
+            if role == 'Vendor':
+                return redirect('vendor_dashboard')
+            elif role == 'Admin':
+                return redirect('/admin/') 
+            
             return redirect('product_list')
         else:
             messages.error(request, "Invalid username or password. Please try again.")

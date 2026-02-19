@@ -6,6 +6,11 @@ from .models import Profile
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
+    role = forms.ChoiceField(
+        choices=(('Customer', 'Customer'), ('Vendor', 'Vendor')),
+        required=True,
+        help_text="Select 'Vendor' if you wish to sell products."
+    )
 
     class Meta:
         model = User
