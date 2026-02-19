@@ -19,7 +19,6 @@
         max-width: 420px;
     }
 
-    /* Tab Styling */
     .nav-pills .nav-link {
         color: #94a3b8;
         font-weight: 600;
@@ -41,7 +40,6 @@
         padding: 12px 15px;
     }
 
-    /* --- PLACEHOLDER VISIBILITY FIX --- */
     .form-control::placeholder {
         color: #94a3b8 !important;
         opacity: 0.8 !important;
@@ -74,17 +72,19 @@
 
         <ul class="nav nav-pills mb-4 justify-content-center" id="loginTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="pass-tab" data-bs-toggle="pill" data-bs-target="#pass-content" type="button">Password</button>
+                <button class="nav-link {% if not request.POST.login_type or request.POST.login_type == 'password' %}active{% endif %}" id="pass-tab" data-bs-toggle="pill" data-bs-target="#pass-content" type="button">Password</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="otp-tab" data-bs-toggle="pill" data-bs-target="#otp-content" type="button">Email OTP</button>
+                <button class="nav-link {% if request.POST.login_type == 'otp' %}active{% endif %}" id="otp-tab" data-bs-toggle="pill" data-bs-target="#otp-content" type="button">Email OTP</button>
             </li>
         </ul>
 
         <div class="tab-content" id="loginTabsContent">
-            <div class="tab-pane fade show active" id="pass-content" role="tabpanel">
+            <div class="tab-pane fade {% if not request.POST.login_type or request.POST.login_type == 'password' %}show active{% endif %}" id="pass-content" role="tabpanel">
                 <form method="POST">
                     {% csrf_token %}
+                    <input type="hidden" name="login_type" value="password">
+                    
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-bold">Username</label>
                         <input type="text" name="username" class="form-control" placeholder="Enter your username" required>
@@ -93,18 +93,29 @@
                         <label class="form-label text-secondary small fw-bold">Password</label>
                         <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
                     </div>
-                    <button type="submit" class="btn-auth-submit">Sign In</button>
+                    <button type="submit" class="btn-auth-submit">Sign In with Password</button>
                 </form>
             </div>
 
-            <div class="tab-pane fade" id="otp-content" role="tabpanel">
+            <div class="tab-pane fade {% if request.POST.login_type == 'otp' %}show active{% endif %}" id="otp-content" role="tabpanel">
                 <form method="POST">
                     {% csrf_token %}
+                    <input type="hidden" name="login_type" value="otp">
+                    
                     <div class="mb-4">
                         <label class="form-label text-secondary small fw-bold">Registered Email</label>
-                        {{ otp_login_form.email }}
+                        <input type="email" name="email" class="form-control" placeholder="example@email.com" required>
                     </div>
+                    
+                    {% if otp_sent %}
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold">Enter 6-Digit OTP</label>
+                        <input type="text" name="otp_code" class="form-control" placeholder="000000" required>
+                    </div>
+                    <button type="submit" name="verify_otp" class="btn-auth-submit">Verify & Login</button>
+                    {% else %}
                     <button type="submit" name="request_otp" class="btn-auth-submit">Send Login OTP</button>
+                    {% endif %}
                 </form>
             </div>
         </div>

@@ -63,6 +63,7 @@ def register(request):
                 user.profile.role = selected_role
                 user.profile.save()
 
+            # Registration still uses OTP for email verification
             send_otp_email(user)
             messages.success(request, f'Account created! A verification OTP has been sent to {user.email}.')
             request.session['temp_user_id'] = user.id
@@ -73,13 +74,15 @@ def register(request):
     return render(request, "users/register.html", {"form": form})
 
 def login_view(request):
-    """Standard and Passwordless Login entry points."""
+    """Standard (Direct) and Passwordless (OTP) Login entry points."""
     form = AuthenticationForm()
     otp_login_form = PasswordlessLoginForm()
 
     if request.method == 'POST':
+        login_type = request.POST.get('login_type') # From the hidden field in login.html
+
         # OPTION 1: Passwordless OTP Login Request
-        if 'request_otp' in request.POST:
+        if login_type == 'otp' or 'request_otp' in request.POST:
             otp_login_form = PasswordlessLoginForm(request.POST)
             if otp_login_form.is_valid():
                 email = otp_login_form.cleaned_data.get('email')
@@ -92,15 +95,22 @@ def login_view(request):
                 except User.DoesNotExist:
                     messages.error(request, "No account found with this email.")
         
-        # OPTION 2: Standard Username/Password Login
+        # OPTION 2: Standard Username/Password Login (Direct Access)
         else:
             form = AuthenticationForm(request, data=request.POST)
             if form.is_valid():
-                user = form.get_user() # Retrieve user directly from validated form
-                send_otp_email(user)
-                request.session['temp_user_id'] = user.id
-                messages.info(request, "Credentials verified. Please enter the OTP sent to your email.")
-                return redirect('verify_otp')
+                user = form.get_user()
+                # LOG IN DIRECTLY: Skip OTP for password users
+                login(request, user)
+                messages.success(request, f"Welcome back, {user.username}!")
+                
+                # Role-based redirection
+                role = user.profile.role
+                if role == 'Vendor':
+                    return redirect('vendor_dashboard')
+                elif role == 'Admin':
+                    return redirect('/admin/')
+                return redirect('product_list')
             else:
                 messages.error(request, "Invalid username or password.")
 
@@ -109,8 +119,10 @@ def login_view(request):
         'otp_login_form': otp_login_form
     })
 
+
+
 def verify_otp(request):
-    """Final gate: Verifies OTP and redirects user based on their Profile Role."""
+    """Verifies OTP for Registration and Passwordless Login paths."""
     user_id = request.session.get('temp_user_id')
     if not user_id:
         return redirect('login')
@@ -122,25 +134,22 @@ def verify_otp(request):
         if form.is_valid():
             entered_otp = form.cleaned_data.get('otp')
             if user.profile.otp == entered_otp:
-                # Mark as verified and clear OTP
                 user.profile.is_verified = True
                 user.profile.otp = None 
                 user.profile.save()
                 
-                # Finalize Login
                 login(request, user)
                 del request.session['temp_user_id']
                 
-                messages.success(request, f"Welcome back, {user.username}!")
+                messages.success(request, f"Welcome, {user.username}!")
 
-                # --- NEW ROLE-BASED REDIRECTION LOGIC ---
                 role = user.profile.role
                 if role == 'Vendor':
                     return redirect('vendor_dashboard')
                 elif role == 'Admin':
                     return redirect('/admin/')
                 
-                return redirect('product_list') # Customers go to shop
+                return redirect('product_list')
             else:
                 messages.error(request, "Invalid OTP. Please try again.")
     else:
@@ -148,6 +157,7 @@ def verify_otp(request):
     
     return render(request, 'users/verify_otp.html', {'form': form, 'user_email': user.email})
 
+# --- REMAINDER OF VIEWS (Logout, Profile) UNCHANGED ---
 def logout_view(request):
     logout(request)
     messages.info(request, "Logged out successfully.")
