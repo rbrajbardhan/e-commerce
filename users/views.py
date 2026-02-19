@@ -11,7 +11,8 @@ from .forms import (
     UserRegisterForm,
     UserLoginForm,
     UserUpdateForm,
-    ProfileUpdateForm
+    ProfileUpdateForm,
+    AuthenticationForm
 )
 
 def send_otp_email(user):
@@ -34,6 +35,11 @@ class OTPform(forms.Form):
         'placeholder': '000000'
     }))
 
+class PasswordlessLoginForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'class': 'form-control bg-dark text-white border-secondary',
+        'placeholder': 'Enter registered email'
+    }))
 
 def register(request):
     """Handles user registration and automatic profile creation."""
@@ -55,27 +61,45 @@ def register(request):
 
     return render(request, "users/register.html", {"form": form})
 
-
 def login_view(request):
-    if request.method == "POST":
-        form = UserLoginForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            
-            if user is not None:
-                # Instead of logging in, send OTP and redirect to verification
-                send_otp_email(user)
-                request.session['temp_user_id'] = user.id # Temporarily hold user in session
-                messages.info(request, "Credentials verified. Please enter the OTP sent to your email.")
-                return redirect('verify_otp')
-        else:
-            messages.error(request, "Invalid username or password. Please try again.")
-    else:
-        form = UserLoginForm()
+    form = AuthenticationForm()
+    otp_login_form = PasswordlessLoginForm()
 
-    return render(request, "users/login.html", {"form": form})
+    if request.method == 'POST':
+        # OPTION 1: Passwordless OTP Login Request
+        if 'request_otp' in request.POST:
+            otp_login_form = PasswordlessLoginForm(request.POST)
+            if otp_login_form.is_valid():
+                email = otp_login_form.cleaned_data.get('email')
+                try:
+                    user = User.objects.get(email=email)
+                    send_otp_email(user)
+                    request.session['temp_user_id'] = user.id
+                    messages.info(request, "OTP sent to your email for passwordless login.")
+                    return redirect('verify_otp')
+                except User.DoesNotExist:
+                    messages.error(request, "No account found with this email.")
+        
+        # OPTION 2: Standard Username/Password Login
+        else:
+            form = AuthenticationForm(request, data=request.POST)
+            if form.is_valid():
+                username = form.cleaned_data.get('username')
+                password = form.cleaned_data.get('password')
+                user = authenticate(username=username, password=password)
+                
+                if user is not None:
+                    send_otp_email(user)
+                    request.session['temp_user_id'] = user.id
+                    messages.info(request, "Credentials verified. Please enter the OTP sent to your email.")
+                    return redirect('verify_otp')
+            else:
+                messages.error(request, "Invalid username or password.")
+
+    return render(request, 'users/login.html', {
+        'form': form, 
+        'otp_login_form': otp_login_form
+    })
 
 # View to handle both Registration and Login OTP verification.
 def verify_otp(request):
