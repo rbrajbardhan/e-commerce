@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import random
 
 class Profile(models.Model):
     # Role-based access (Admin, Vendor, Customer)
@@ -35,6 +36,11 @@ class Profile(models.Model):
 
     wishlist = models.ManyToManyField('products.Product', blank=True, related_name='wishlisted_by')
 
+    # OTP and Verification fields..
+
+    otp = models.CharField(max_length=6, blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.user.username} ({self.role})"
 
@@ -46,7 +52,12 @@ class Profile(models.Model):
     @property
     def is_customer(self):
         return self.role == 'Customer'
-
+    
+    # OTP Generation
+    def generate_otp(self):
+        self.otp = str(random.randint(100000,999999))
+        self.save()
+        return self.otp 
 
 # --- CONSOLIDATED SIGNALS ---
 

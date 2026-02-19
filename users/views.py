@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
+import random
+from django import forms 
 
 from .forms import (
     UserRegisterForm,
@@ -9,6 +13,27 @@ from .forms import (
     UserUpdateForm,
     ProfileUpdateForm
 )
+
+def send_otp_email(user):
+    otp = str(random.randint(100000,999999))
+    profile = user.profile
+    profile.otp = otp
+    profile.save()
+
+    send_mail(
+        "ShopX Secure Access - Your OTP",
+        f'Hello {user.username}, \n\nYour One-Time Password (OTP) is: {otp}\n\nPlease enter this code to finalize your access.\n\nStay Secure,\nShopX Team',
+        'noreply@shopx.com',
+        [user.email],
+        fail_silently=False,
+    )
+
+class OTPform(forms.Form):
+    otp = forms.CharField(max_length=6, min_length=6, widget=forms.TextInput(attrs={
+        'class': 'form-control bg-dark text-white border-secondary text-center fs-4',
+        'placeholder': '000000'
+    }))
+
 
 def register(request):
     """Handles user registration and automatic profile creation."""
@@ -20,9 +45,11 @@ def register(request):
         if form.is_valid():
             # Saving user triggers the consolidated signal in models.py
             user = form.save() 
-            login(request, user)
-            messages.success(request, f"Welcome to ShopX, {user.username}! Your account has been created.")
-            return redirect('product_list')
+            # Registration Welcome message and OTP.
+            send_otp_email(user)
+            messages.success(request, f'Account created for {user.username}! A verification OTP has been sent to your email.')
+            request.session['temp_user_id'] = user.id
+            return redirect('verify_otp')
     else:
         form = UserRegisterForm()
 
@@ -30,30 +57,57 @@ def register(request):
 
 
 def login_view(request):
-    """Handles secure login and redirects based on SRS role requirements."""
-    if request.user.is_authenticated:
-        return redirect('product_list')
-
     if request.method == "POST":
         form = UserLoginForm(request, data=request.POST)
         if form.is_valid():
-            # Get user object directly from form to avoid AnonymousUser issues
-            user = form.get_user()
-            login(request, user)
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
             
-            messages.success(request, f"Welcome back, {user.username}!")
-            
-            
-            next_url = request.GET.get('next')
-            if next_url:
-                return redirect(next_url)
-            return redirect('product_list')
+            if user is not None:
+                # Instead of logging in, send OTP and redirect to verification
+                send_otp_email(user)
+                request.session['temp_user_id'] = user.id # Temporarily hold user in session
+                messages.info(request, "Credentials verified. Please enter the OTP sent to your email.")
+                return redirect('verify_otp')
         else:
             messages.error(request, "Invalid username or password. Please try again.")
     else:
         form = UserLoginForm()
 
     return render(request, "users/login.html", {"form": form})
+
+# View to handle both Registration and Login OTP verification.
+def verify_otp(request):
+    user_id = request.session.get('temp_user_id')
+    if not user_id:
+        return redirect('login')
+    
+    user = User.objects.get(id=user_id)
+    
+    if request.method == 'POST':
+        form = OTPform(request.POST)
+        if form.is_valid():
+            entered_otp = form.cleaned_data.get('otp')
+            if user.profile.otp == entered_otp:
+                # Mark profile as verified
+                user.profile.is_verified = True
+                user.profile.otp = None # Clear OTP after use
+                user.profile.save()
+                
+                # Finalize Login
+                login(request, user)
+                del request.session['temp_user_id']
+                
+                messages.success(request, f"Welcome back, {user.username}!")
+                return redirect('product_list')
+            else:
+                messages.error(request, "Invalid OTP. Please try again.")
+    else:
+        form = OTPform()
+    
+    return render(request, 'users/verify_otp.html', {'form': form, 'user_email': user.email})
+
 
 
 def logout_view(request):
