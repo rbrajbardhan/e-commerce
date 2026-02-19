@@ -41,7 +41,7 @@
         margin-top: 3rem;
     }
 
-    .table { color: #f8fafc; margin-bottom: 0; }
+    .table { color: #f8fafc; margin-bottom: 0; width: 100%; border-collapse: separate; border-spacing: 0; }
     .table thead { background: rgba(255, 255, 255, 0.05); }
     .table th { border: none; padding: 1.2rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; }
     .table td { border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 1.2rem; vertical-align: middle; }
@@ -53,6 +53,7 @@
         font-size: 0.85rem;
         transition: 0.3s;
         text-decoration: none;
+        display: inline-block;
     }
 
     .btn-edit { background: rgba(16, 185, 129, 0.1); color: var(--accent-color); border: 1px solid rgba(16, 185, 129, 0.2); }
@@ -60,6 +61,10 @@
 
     .btn-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
     .btn-delete:hover { background: #ef4444; color: white; }
+
+    /* Force visibility for dynamic data */
+    .product-name-text { color: #ffffff !important; font-weight: 700 !important; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    .product-price-text { color: #ffffff !important; font-weight: 800 !important; }
 </style>
 
 <div class="container mb-5">
@@ -94,17 +99,15 @@
         </div>
     </div>
 
-    
     <div class="glass-table-container">
         <div class="p-4 border-bottom border-secondary border-opacity-10 d-flex justify-content-between align-items-center">
             <h5 class="text-white fw-bold mb-0">Your Inventory</h5>
-            <span class="badge bg-dark text-secondary border border-secondary px-3 py-2">Sorted by Newest</span>
         </div>
         <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Product</th>
+                        <th style="min-width: 250px;">Product</th>
                         <th>Price</th>
                         <th>Stock</th>
                         <th>Status</th>
@@ -112,46 +115,53 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <img src="{{ product.image.url }}" class="rounded-3 me-3" style="width: 45px; height: 45px; object-fit: cover;">
-                                <div>
-                                    <div class="fw-bold text-white">{{ product.name }}</div>
-                                    <small class="text-secondary">{{ product.category.name }}</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="fw-bold">${{ product.price }}</td>
-                        <td>
-                            <span class="{% if product.stock < 5 %}text-danger fw-bold{% else %}text-secondary{% endif %}">
-                                {{ product.stock }} units
-                            </span>
-                        </td>
-                        <td>
-                            {% if product.available %}
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Live</span>
-                            {% else %}
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">Hidden</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{% url 'vendor_edit_product' product.slug %}" class="btn-action btn-edit">Edit</a>
-                                <a href="{% url 'vendor_delete_product' product.slug %}" class="btn-action btn-delete">Delete</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5">
-                            <p class="text-secondary mb-3">You haven't listed any products yet.</p>
-                            <a href="{% url 'vendor_add_product' %}" class="text-accent text-decoration-none fw-bold">List your first item →</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+    {% for product in products %}
+    <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+        <td style="padding: 1.2rem; vertical-align: middle;">
+            <div class="d-flex align-items-center">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid rgba(0,0,0,0.1);">
+                {% endif %}
+                <div>
+                    <div style="color: #1e293b !important; font-weight: 800 !important; font-size: 1.1rem !important; display: block !important;">
+                        {{ product.name }}
+                    </div>
+                    <small style="color: #64748b !important; font-weight: 600 !important;">
+                        {{ product.category.name }}
+                    </small>
+                </div>
+            </div>
+        </td>
+        <td style="padding: 1.2rem; vertical-align: middle;">
+            <span style="color: #10b981 !important; font-weight: 800 !important; font-size: 1.1rem !important;">
+                ${{ product.price }}
+            </span>
+        </td>
+        <td style="padding: 1.2rem; vertical-align: middle;">
+            <span style="color: #334155 !important; font-weight: 700 !important;">
+                {{ product.stock }} units
+            </span>
+        </td>
+        <td style="padding: 1.2rem; vertical-align: middle;">
+            <span class="badge bg-success px-3 py-2" style="font-weight: 700; font-size: 0.75rem; letter-spacing: 0.5px;">
+                LIVE
+            </span>
+        </td>
+        <td style="padding: 1.2rem; vertical-align: middle; text-align: right;">
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{% url 'vendor_edit_product' product.slug %}" class="btn-action btn-edit" style="background: #f1f5f9; color: #0f172a; border: 1px solid #e2e8f0;">Edit</a>
+                <a href="{% url 'vendor_delete_product' product.slug %}" class="btn-action btn-delete">Delete</a>
+            </div>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5" style="text-align: center; padding: 5rem; color: #64748b !important; font-weight: 600;">
+            No products listed in your inventory yet.
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
             </table>
         </div>
     </div>

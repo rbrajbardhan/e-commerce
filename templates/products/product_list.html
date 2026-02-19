@@ -9,7 +9,7 @@
         border-radius: 32px;
         overflow: hidden;
         margin-bottom: 4rem;
-        background: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=2070') no-repeat center center;
+        background: url('https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=2070') no-repeat center center;
         background-size: cover;
         box-shadow: 0 20px 50px rgba(0,0,0,0.3);
     }
@@ -17,24 +17,30 @@
     .hero-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, transparent 100%);
+        background: linear-gradient(to right, 
+            rgba(15, 23, 42, 0.95) 0%, 
+            rgba(15, 23, 42, 0.7) 40%, 
+            rgba(15, 23, 42, 0.3) 100%);
         display: flex;
         align-items: center;
         padding: 0 5%;
     }
 
-    .hero-content { max-width: 650px; }
+    .hero-content { 
+        max-width: 650px; 
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    }
 
     .hero-badge {
-        background: rgba(16, 185, 129, 0.15);
-        color: var(--accent-color);
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
         padding: 8px 20px;
         border-radius: 100px;
         font-weight: 700;
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
     /* --- CATEGORY SCROLLER --- */
@@ -64,9 +70,9 @@
     }
 
     .cat-card:hover, .cat-card.active {
-        background: var(--accent-color);
+        background: #10b981;
         color: white;
-        border-color: var(--accent-color);
+        border-color: #10b981;
         transform: translateY(-2px);
     }
 
@@ -84,7 +90,7 @@
 
     .product-card:hover {
         transform: translateY(-10px);
-        border-color: var(--accent-color);
+        border-color: #10b981;
         background: rgba(255, 255, 255, 0.04);
         box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
@@ -109,43 +115,46 @@
 
     .product-card:hover .product-img { transform: scale(1.1); }
 
-    /* --- WISHLIST OVERLAY BUTTON --- */
+    /* FIXED: WISHLIST ICON VISIBILITY */
     .wishlist-overlay-btn {
         position: absolute;
         top: 15px;
         right: 15px;
-        z-index: 100;
+        z-index: 50; /* Ensure it stays above the image */
         background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: 0.3s;
+        padding: 0;
     }
 
     .wishlist-overlay-btn:hover {
         background: rgba(15, 23, 42, 0.9);
         transform: scale(1.1);
+        border-color: var(--accent-color);
     }
 
     .product-info-body { padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column; }
     
-    .product-link { text-decoration: none; color: inherit; }
+    .product-title-text { color: #ffffff !important; font-weight: 700; margin-bottom: 0.5rem; text-decoration: none; }
+    .product-price-text { color: #ffffff !important; font-weight: 800; font-size: 1.25rem; }
 
     .btn-emerald {
-        background: var(--accent-color);
+        background: #10b981;
         color: white;
         border: none;
         border-radius: 12px;
         font-weight: 600;
         transition: 0.3s;
     }
-    .btn-emerald:hover { background: var(--accent-hover); transform: scale(1.05); }
+    .btn-emerald:hover { background: #059669; transform: scale(1.05); }
 
     /* --- PROMO BANNER --- */
     .promo-banner {
@@ -158,11 +167,6 @@
         margin: 6rem 0;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-
-    @media (max-width: 768px) {
-        .promo-banner { flex-direction: column; text-align: center; gap: 2rem; padding: 2.5rem; }
-        .hero-section { height: 450px; }
-    }
 </style>
 
 <div class="container mt-4">
@@ -172,7 +176,7 @@
             <div class="hero-content">
                 <span class="hero-badge mb-3 d-inline-block">Exclusive Drop 2026</span>
                 <h1 class="display-3 fw-bold text-white mb-3">Elevate Your <br>Lifestyle.</h1>
-                <p class="fs-5 text-secondary mb-4 opacity-75">Curated premium hardware and lifestyle essentials.</p>
+                <p class="fs-5 text-white mb-4 opacity-90">Curated premium hardware and refined lifestyle essentials.</p>
                 <div class="d-flex gap-3">
                     <a href="#shop-now" class="btn-emerald-pill px-5 py-3 text-decoration-none shadow">Shop Collection</a>
                 </div>
@@ -223,16 +227,16 @@
                     </div>
                     
                     <div class="product-info-body">
-                        <small class="text-uppercase fw-bold mb-2" style="font-size: 0.65rem; color: var(--accent-color);">
+                        <small class="text-uppercase fw-bold mb-2" style="font-size: 0.65rem; color: #10b981;">
                             {{ product.category.name }}
                         </small>
                         
-                        <a href="{% url 'product_detail' product.slug %}" class="product-link">
-                            <h5 class="text-white mb-3" style="font-weight:600;">{{ product.name }}</h5>
+                        <a href="{% url 'product_detail' product.slug %}" class="product-title-text">
+                            <h5 class="mb-3">{{ product.name }}</h5>
                         </a>
                         
                         <div class="mt-auto d-flex align-items-center justify-content-between">
-                            <span class="fs-5 fw-bold text-white">${{ product.price }}</span>
+                            <span class="product-price-text">${{ product.price }}</span>
                             <a href="{% url 'add_to_cart' product.id %}" class="btn-emerald btn-sm px-3 py-2 btn-ajax-add">
                                 Add to Cart
                             </a>
@@ -255,7 +259,7 @@
     {% if user.is_authenticated %}
         <div class="promo-text">
             <h2 class="display-6 fw-bold text-white mb-2">Welcome Back, {{ user.username }}!</h2>
-            <p class="text-white-50 fs-5 mb-0">As a ShopX Member, your 15% discount is automatically applied at checkout.</p>
+            <p class="text-white-50 fs-5 mb-0">Your exclusive ShopX Member discount is active.</p>
         </div>
         <div class="promo-action">
             <a href="{% url 'profile' %}" class="btn btn-light btn-lg fw-bold px-5 py-3" style="border-radius: 14px;">View Rewards</a>

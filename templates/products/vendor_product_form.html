@@ -1,6 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    /* --- SHARED INPUT STYLING --- */
+    /* Applies consistent glassmorphism to all text, select, and number inputs */
+    .glass-card input, 
+    .glass-card select, 
+    .glass-card textarea {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+        border-radius: 12px;
+        padding: 12px 18px;
+        width: 100%;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    .glass-card input:focus,
+    .glass-card select:focus,
+    .glass-card textarea:focus {
+        border-color: var(--accent-color) !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+
+    /* Legibility fix for placeholders on dark inputs */
+    .glass-card ::placeholder {
+        color: #94a3b8 !important;
+        opacity: 0.8;
+    }
+
+    /* Specific adjustment for the file upload field to match spacing */
+    input[type="file"] {
+        padding: 8px 18px;
+        font-size: 0.9rem;
+        color: #94a3b8;
+    }
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
@@ -12,6 +49,7 @@
             </div>
 
             <div class="glass-card p-4 p-md-5" style="background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border-radius: 28px; border: 1px solid rgba(255,255,255,0.1);">
+                
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     
@@ -20,16 +58,22 @@
                         <label class="form-label text-secondary small fw-bold text-uppercase" for="{{ field.id_for_label }}">
                             {{ field.label }}
                         </label>
+                        
                         {{ field }}
-                        {% if field.errors %}
-                            <div class="text-danger small mt-1">{{ field.errors }}</div>
+                        
+                        {% if field.help_text %}
+                            <small class="text-secondary d-block mt-1">{{ field.help_text|safe }}</small>
                         {% endif %}
+                        
+                        {% for error in field.errors %}
+                            <div class="text-danger small mt-1">✕ {{ error }}</div>
+                        {% endfor %}
                     </div>
                     {% endfor %}
 
                     <div class="d-grid mt-5">
                         <button type="submit" class="btn-emerald-pill py-3 fs-5">
-                            Save Product Listing
+                            {% if 'Edit' in title %}Update Listing{% else %}Publish Product{% endif %}
                         </button>
                     </div>
                 </form>
